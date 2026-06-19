@@ -175,5 +175,25 @@ Docker Questions
 
 17. How to connect two pods in different namespaces.
 18. Admission control, authentication and authorization?
-19. 
+19. Pods container (appp, logger, metrics, logarchiver)not ready since 30/40 min after deployment? what was the issues?
+    - deleted pod - still issue there
+    - Root causees:
+       - Redis connection issue - redis cluster unreachable or slow to respond
+       - KMS connection issue - key Management service unavailable or auth failing
+       - Network policy - Pod can't reach Redis/KMS due to network restrictions
+       - Timeout - Redis/KMS respons takes > 3s (probe time out)
+      ```bash
+      readinessProbe:
+        failureThreshold: 3
+        httpGet:
+          path: /wbxmbs2/meetingservice/health/readiness?redis=yes&kms=yes
+          port: app
+          scheme: HTTP
+        initialDelaySeconds: 30
+        periodSeconds: 3
+        successThreshold: 1
+        timeoutSeconds: 3
+      ```
+      remedies: The redis caused the MBS pod readiness failure, hit the 8001 > 8000 connection limit on redis host ```tx3pr222xxxxx```
+      
 
